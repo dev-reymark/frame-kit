@@ -5,8 +5,8 @@ export const Releases: React.FC = () => {
   const [copiedHash, setCopiedHash] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
 
-  const sha256 = '177DF485BE3EE295CBEF7B356F56AE9489A5F928FB4B403F7E85B5CC24D71AF9';
-  const verifyCmd = 'Get-FileHash -Algorithm SHA256 ".\\Lockdown Browser Setup 1.0.0.exe"';
+  const sha256 = 'EE3F5441C2B9A513B61AA06A6C949ED367B52DF2327843DA85A625939E0561EB';
+  const verifyCmd = 'Get-FileHash -Algorithm SHA256 ".\\FrameKit Setup 1.0.0.exe"';
 
   const copyHash = () => {
     navigator.clipboard.writeText(sha256);
@@ -20,6 +20,9 @@ export const Releases: React.FC = () => {
     setTimeout(() => setCopiedCmd(false), 2000);
   };
 
+  const githubReleaseUrl = 'https://github.com/dev-reymark/frame-kit/releases';
+  const directWindowsExeUrl = 'https://github.com/dev-reymark/frame-kit/releases/latest/download/FrameKit-Setup-1.0.0.exe';
+
   return (
     <section id="releases" style={{ padding: '80px 0', borderBottom: '1px solid var(--border)' }}>
       <div className="container">
@@ -31,7 +34,7 @@ export const Releases: React.FC = () => {
             Download FrameKit
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            Production-grade standalone binaries for Windows, macOS, and Android.
+            Production standalone binaries hosted on high-speed GitHub Releases CDN.
           </p>
         </div>
 
@@ -50,13 +53,12 @@ export const Releases: React.FC = () => {
               </p>
             </div>
             <a
-              href="/downloads/Lockdown-Browser-Setup-1.0.0.exe"
-              download="FrameKit-Setup-1.0.0.exe"
+              href={directWindowsExeUrl}
               className="btn btn-primary"
               style={{ width: '100%', padding: '12px', fontSize: '13px' }}
             >
               <DownloadIcon size={16} />
-              <span>Download .exe</span>
+              <span>Download .exe (Installer)</span>
             </a>
           </div>
 
@@ -73,7 +75,7 @@ export const Releases: React.FC = () => {
               </p>
             </div>
             <a
-              href="https://github.com"
+              href={githubReleaseUrl}
               target="_blank"
               rel="noreferrer"
               className="btn btn-secondary"
@@ -97,7 +99,7 @@ export const Releases: React.FC = () => {
               </p>
             </div>
             <a
-              href="https://github.com"
+              href={githubReleaseUrl}
               target="_blank"
               rel="noreferrer"
               className="btn btn-secondary"
