@@ -6,7 +6,7 @@ export const Releases: React.FC = () => {
   const [copiedCmd, setCopiedCmd] = useState(false);
 
   const sha256 = 'EE3F5441C2B9A513B61AA06A6C949ED367B52DF2327843DA85A625939E0561EB';
-  const verifyCmd = 'Get-FileHash -Algorithm SHA256 ".\\FrameKit Setup 1.0.0.exe"';
+  const verifyCmd = 'Get-FileHash -Algorithm SHA256 ".\\FrameKit.Setup.1.0.0.exe"';
 
   const copyHash = () => {
     navigator.clipboard.writeText(sha256);
@@ -20,8 +20,8 @@ export const Releases: React.FC = () => {
     setTimeout(() => setCopiedCmd(false), 2000);
   };
 
-  const githubReleaseUrl = 'https://github.com/dev-reymark/frame-kit/releases';
-  const directWindowsExeUrl = 'https://github.com/dev-reymark/frame-kit/releases/latest/download/FrameKit-Setup-1.0.0.exe';
+  const githubReleaseUrl = 'https://github.com/dev-reymark/frame-kit/releases/tag/v1.0.0';
+  const directWindowsExeUrl = 'https://github.com/dev-reymark/frame-kit/releases/download/v1.0.0/FrameKit.Setup.1.0.0.exe';
 
   return (
     <section id="releases" style={{ padding: '80px 0', borderBottom: '1px solid var(--border)' }}>
