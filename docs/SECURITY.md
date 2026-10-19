@@ -65,13 +65,13 @@ The main process enforces an in-memory `AdminRateLimiter`:
 
 ---
 
-## 5. Application-Level Lockdown vs. OS-Enforced Lockdown
+## 5. Application-Level FrameKit vs. OS-Enforced FrameKit
 
 > [!WARNING]
 > **Understanding the Boundary Between Application and Operating System:**
 > No user-mode desktop application (Electron, C++, WPF, or Java) can intercept or suppress low-level Windows kernel secure attention sequences (`Ctrl+Alt+Delete`), system access keys, or task switching if the operating system grants the user shell access.
 > 
-> FrameKit provides comprehensive **application-level** lockdown. To achieve an **airtight, tamper-proof hardware kiosk**, pair FrameKit with Windows Operating System Lockdown mechanisms.
+> FrameKit provides comprehensive **application-level** lockdown. To achieve an **airtight, tamper-proof hardware kiosk**, pair FrameKit with Windows Operating System FrameKit mechanisms.
 
 ### Recommended OS Deployment Modes for Windows 10/11 Pro & Enterprise:
 

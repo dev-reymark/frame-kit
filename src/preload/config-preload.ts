@@ -19,4 +19,5 @@ const api: LockdownAPI = {
   openDocs: () => ipcRenderer.invoke('lockdown:open-docs')
 };
 
+contextBridge.exposeInMainWorld('framekitAPI', api);
 contextBridge.exposeInMainWorld('lockdownAPI', api);

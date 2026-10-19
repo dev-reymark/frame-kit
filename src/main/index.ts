@@ -8,7 +8,7 @@ import { registerIpcHandlers } from './ipc-handlers';
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-  console.warn('[Lockdown Main] Another instance is already running. Exiting duplicate instance.');
+  console.warn('[FrameKit Main] Another instance is already running. Exiting duplicate instance.');
   app.quit();
 } else {
   let configManager: ConfigManager;

@@ -52,7 +52,7 @@ export async function testTargetConnection(
           method: 'GET',
           timeout: timeoutMs,
           headers: {
-            'User-Agent': 'LockdownBrowser-ConnectionTester/1.0',
+            'User-Agent': 'FrameKit-ConnectionTester/1.0',
             'Accept': '*/*'
           }
         },

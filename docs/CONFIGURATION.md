@@ -10,8 +10,8 @@ FrameKit persists its configuration locally without requiring an external databa
 
 ### File Location
 ```text
-Windows: %APPDATA%\framekit\lockdown-config.json
-(Full path: C:\Users\<Username>\AppData\Roaming\framekit\lockdown-config.json)
+Windows: %APPDATA%\framekit\framekit-config.json
+(Full path: C:\Users\<Username>\AppData\Roaming\framekit\framekit-config.json)
 ```
 
 ### JSON Schema
@@ -108,6 +108,6 @@ If an administrator password is forgotten or lost:
    ```
 2. Delete the local configuration file:
    ```powershell
-   Remove-Item "$env:APPDATA\framekit\lockdown-config.json" -Force
+   Remove-Item "$env:APPDATA\framekit\framekit-config.json" -Force
    ```
 3. Relaunch FrameKit. The application will start clean in first-time setup mode, prompting for a new target URL and new administrator password.

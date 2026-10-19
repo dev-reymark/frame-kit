@@ -51,7 +51,7 @@ export interface AppStatus {
   appName: string;
 }
 
-export interface LockdownAPI {
+export interface FrameKitAPI {
   getConfig: () => Promise<AppConfig | null>;
   saveConfig: (input: ConfigInput) => Promise<{ success: boolean; error?: string }>;
   testConnection: (url: string) => Promise<ConnectionTestResult>;

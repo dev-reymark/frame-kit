@@ -54,7 +54,7 @@ graph TD
 ### A. Main Process (`src/main/`)
 The main process acts as the security supervisor:
 - **`index.ts`**: Enforces `app.requestSingleInstanceLock()`. If a secondary instance is launched, it restores and focuses the active window and immediately terminates the duplicate.
-- **`config.ts`**: Manages persistent storage at `app.getPath('userData')/lockdown-config.json`. Password hashes are generated via Node's `crypto.pbkdf2Sync` (100,000 iterations of SHA-512 with a 32-byte cryptographically secure random salt). Never stores plain passwords. Enforces an `AdminRateLimiter` that locks access after 5 consecutive failed attempts.
+- **`config.ts`**: Manages persistent storage at `app.getPath('userData')/framekit-config.json`. Password hashes are generated via Node's `crypto.pbkdf2Sync` (100,000 iterations of SHA-512 with a 32-byte cryptographically secure random salt). Never stores plain passwords. Enforces an `AdminRateLimiter` that locks access after 5 consecutive failed attempts.
 - **`security.ts`**: Intercepts Chromium navigation events (`will-navigate`, `will-redirect`), popup creation (`setWindowOpenHandler`), `<webview>` attachment (`will-attach-webview`), context menus, and keyboard input (`before-input-event`).
 - **`window-manager.ts`**: Creates and configures the native `BrowserWindow`. Applies launch modes (`windowed`, `fullscreen`, `kiosk`), handles crash recovery, and orchestrates offline fallback transitions.
 - **`ipc-handlers.ts`**: Registers typed IPC invoke handlers. Every invocation passes through `isTrustedSender()`, verifying that the requesting frame origin is an internal `file://` or local dev URL. Any IPC request from an external web application is rejected immediately.
@@ -78,7 +78,7 @@ The application operates according to the following deterministic state machine:
 ```mermaid
 stateDiagram-v2
     [*] --> Startup
-    Startup --> CheckConfig: Load lockdown-config.json
+    Startup --> CheckConfig: Load framekit-config.json
 
     state CheckConfig {
         [*] --> Evaluating
@@ -96,10 +96,10 @@ stateDiagram-v2
 
     state Launching {
         [*] --> LoadTarget: Apply Mode (Windowed / Fullscreen / Kiosk)
-        LoadTarget --> LockdownActive: Apply Navigation & Shortcut Guards
+        LoadTarget --> FrameKitActive: Apply Navigation & Shortcut Guards
     }
 
-    state LockdownActive {
+    state FrameKitActive {
         [*] --> TargetRunning: Website Active & Interactive
         TargetRunning --> AdminTriggered: Ctrl+Shift+Alt+K
         AdminTriggered --> AdminModal: Auth Challenge

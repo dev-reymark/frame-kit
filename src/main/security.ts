@@ -91,7 +91,7 @@ export function applyWebContentsLockdown(
 ): void {
   // 1. Block opening new windows / popups
   webContents.setWindowOpenHandler(({ url }) => {
-    console.warn(`[Lockdown] Blocked attempt to open new window for: ${url}`);
+    console.warn(`[FrameKit] Blocked attempt to open new window for: ${url}`);
     return { action: 'deny' };
   });
 
@@ -101,7 +101,7 @@ export function applyWebContentsLockdown(
     const allowed = getAllowedDomains();
     if (!isNavigationAllowed(navigationUrl, target, allowed)) {
       event.preventDefault();
-      console.warn(`[Lockdown] Blocked unapproved navigation to: ${navigationUrl}`);
+      console.warn(`[FrameKit] Blocked unapproved navigation to: ${navigationUrl}`);
     }
   });
 
@@ -111,14 +111,14 @@ export function applyWebContentsLockdown(
     const allowed = getAllowedDomains();
     if (!isNavigationAllowed(redirectUrl, target, allowed)) {
       event.preventDefault();
-      console.warn(`[Lockdown] Blocked unapproved redirect to: ${redirectUrl}`);
+      console.warn(`[FrameKit] Blocked unapproved redirect to: ${redirectUrl}`);
     }
   });
 
   // 4. Block <webview> tags
   webContents.on('will-attach-webview', (event) => {
     event.preventDefault();
-    console.warn('[Lockdown] Blocked webview tag attachment');
+    console.warn('[FrameKit] Blocked webview tag attachment');
   });
 
   // 5. Disable context menu (right-click inspect)

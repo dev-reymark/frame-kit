@@ -106,7 +106,9 @@ export class ConfigManager {
         console.error('Failed to create storage dir:', err);
       }
     }
-    this.configFilePath = path.join(storageDir, 'lockdown-config.json');
+    const primary = path.join(storageDir, 'framekit-config.json');
+    const legacy = path.join(storageDir, 'framekit-config.json');
+    this.configFilePath = fs.existsSync(legacy) && !fs.existsSync(primary) ? legacy : primary;
     this.load();
   }
 
@@ -121,7 +123,7 @@ export class ConfigManager {
         }
       }
     } catch (err) {
-      console.error('Failed to load lockdown-config.json:', err);
+      console.error('Failed to load framekit-config.json:', err);
     }
     this.inMemoryConfig = null;
     return null;
@@ -162,7 +164,7 @@ export class ConfigManager {
 
     const now = new Date().toISOString();
     const newConfig: AppConfig = {
-      appName: input.appName?.trim() || this.inMemoryConfig?.appName || 'POS Lockdown Terminal',
+      appName: input.appName?.trim() || this.inMemoryConfig?.appName || 'FrameKit',
       targetUrl: urlValidation.normalizedUrl || input.targetUrl.trim(),
       launchMode: input.launchMode || 'kiosk',
       launchOnStartup: Boolean(input.launchOnStartup),

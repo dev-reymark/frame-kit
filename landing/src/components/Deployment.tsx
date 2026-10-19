@@ -14,29 +14,29 @@ export const Deployment: React.FC = () => {
     {
       num: '01',
       title: 'Standard Installation',
-      desc: 'Download the Windows NSIS installer and launch it. The wizard installs Lockdown Browser to your device and automatically creates a desktop shortcut.',
-      code: '.\\Lockdown Browser Setup 1.0.0.exe',
+      desc: 'Download the Windows NSIS installer and launch it. The wizard installs FrameKit to your device and automatically creates a desktop shortcut.',
+      code: '.\\FrameKit Setup 1.0.0.exe',
       key: 'install'
     },
     {
       num: '02',
       title: 'Silent Fleet Deployment (SCCM / Intune / MDM)',
       desc: 'For enterprise multi-store IT administrators deploying across hundreds of cashier terminals simultaneously via Active Directory or PowerShell script.',
-      code: 'Start-Process -FilePath ".\\Lockdown Browser Setup 1.0.0.exe" -ArgumentList "/S" -Wait',
+      code: 'Start-Process -FilePath ".\\FrameKit Setup 1.0.0.exe" -ArgumentList "/S" -Wait',
       key: 'silent'
     },
     {
       num: '03',
       title: 'Pre-Provisioning Configuration File',
-      desc: 'Lockdown configuration is saved to %APPDATA%\\lockdown-browser\\lockdown-config.json. You can deploy this pre-hashed configuration file across machines to bypass manual setup.',
-      code: 'Copy-Item -Path "\\\\server\\pos-configs\\lockdown-config.json" -Destination "$env:APPDATA\\lockdown-browser\\" -Force',
+      desc: 'Lockdown configuration is saved to %APPDATA%\\framekit\\lockdown-config.json. You can deploy this pre-hashed configuration file across machines to bypass manual setup.',
+      code: 'Copy-Item -Path "\\\\server\\pos-configs\\lockdown-config.json" -Destination "$env:APPDATA\\framekit\\" -Force',
       key: 'preconf'
     },
     {
       num: '04',
       title: 'Emergency Admin Reset Flag',
       desc: 'If an on-site manager forgets the administrator password or the target domain permanently changes, launch with the recovery flag to clear settings and reset the master PIN.',
-      code: '& "C:\\Users\\$env:USERNAME\\AppData\\Local\\Programs\\lockdown-browser\\Lockdown Browser.exe" --reset-lockdown-config',
+      code: '& "C:\\Users\\$env:USERNAME\\AppData\\Local\\Programs\\framekit\\FrameKit.exe" --reset-framekit-config',
       key: 'reset'
     }
   ];
@@ -52,7 +52,7 @@ export const Deployment: React.FC = () => {
             Ready for Automated Store Fleet Rollouts
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            From a single indie coffee shop counter to a national 500-store retail chain, Lockdown Browser supports silent scripting, pre-provisioning, and Windows Assigned Access.
+            From a single indie coffee shop counter to a national 500-store retail chain, FrameKit supports silent scripting, pre-provisioning, and Windows Assigned Access.
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export const Deployment: React.FC = () => {
                 Windows 10/11 Pro & Enterprise "Assigned Access" Kiosk Mode
               </h4>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Combine Lockdown Browser with Windows Assigned Access or Shell Launcher. When configured, Windows logs directly into a dedicated kiosk user account and runs Lockdown Browser as the default Windows shell (replacing <code style={{ color: 'var(--accent-blue)' }}>explorer.exe</code>). The user cannot access desktop icons, task managers, or system settings even if rebooted.
+                Combine FrameKit with Windows Assigned Access or Shell Launcher. When configured, Windows logs directly into a dedicated kiosk user account and runs FrameKit as the default Windows shell (replacing <code style={{ color: 'var(--accent-blue)' }}>explorer.exe</code>). The user cannot access desktop icons, task managers, or system settings even if rebooted.
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

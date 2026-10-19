@@ -78,7 +78,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               If you lose the administrator credentials, delete the local configuration file:
             </p>
             <div style={{ backgroundColor: '#1e293b', color: '#f8fafc', padding: '8px 10px', fontSize: '11px', fontFamily: 'monospace', overflowX: 'auto' }}>
-              Remove-Item "$env:APPDATA\lockdown-browser\lockdown-config.json" -Force
+              Remove-Item "$env:APPDATA\framekit\framekit-config.json" -Force
             </div>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
               Deleting this file returns the application to first-time setup mode.
