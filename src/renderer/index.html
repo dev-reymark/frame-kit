@@ -5,13 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self';"
+      content="default-src 'self' https: http: capacitor: blob: data: 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; connect-src *;"
     />
     <title>FrameKit Configuration</title>
     <link rel="stylesheet" href="./index.css" />
+    <script>
+      window.addEventListener('error', function(e) {
+        var root = document.getElementById('root');
+        if (root && root.innerHTML.indexOf('FrameKit Initialization') === -1) {
+          root.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:sans-serif;background:#f8f9fa;color:#111;text-align:center;">' +
+            '<h2 style="font-size:18px;font-weight:700;margin-bottom:8px;">FrameKit Startup Notice</h2>' +
+            '<p style="color:#dc2626;font-size:12px;margin-bottom:16px;max-width:360px;word-break:break-all;">' + (e.message || 'Script failed to load') + '</p>' +
+            '<button onclick="localStorage.clear();location.reload();" style="padding:10px 20px;background:#111827;color:#fff;border:none;font-size:13px;cursor:pointer;">Reset Storage & Reload</button>' +
+            '</div>';
+        }
+      });
+    </script>
   </head>
   <body class="bg-gray-50 text-gray-900 select-none antialiased">
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;color:#6b7280;font-size:14px;background:#f8f9fa;">
+        <div style="font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#111827;margin-bottom:6px;">FrameKit</div>
+        <div style="font-size:12px;color:#9ca3af;">Initializing...</div>
+      </div>
+    </div>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>
