@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppConfig } from '../types/config';
 import { ConfigForm } from './components/ConfigForm';
 import { AdminModal } from './components/AdminModal';
@@ -22,6 +22,16 @@ export const App: React.FC = () => {
       if (window.lockdownAPI) {
         const loaded = await window.lockdownAPI.getConfig();
         setConfig(loaded);
+      } else {
+        const saved = localStorage.getItem('framekit_config');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setConfig(parsed);
+          if (parsed.targetUrl && parsed.rememberConfig && viewParam !== 'offline') {
+            window.location.href = parsed.targetUrl;
+            return;
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to load initial config:', err);

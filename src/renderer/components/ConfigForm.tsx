@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LaunchMode, ConfigInput } from '../../types/config';
 import { validateTargetUrl } from '../utils/validation';
 import { ConnectionTester } from './ConnectionTester';
@@ -79,6 +79,14 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
           setSaving(false);
           return;
         }
+      } else {
+        try {
+          localStorage.setItem('framekit_config', JSON.stringify(payload));
+        } catch {
+          // ignore quota error
+        }
+        window.location.href = payload.targetUrl;
+        return;
       }
 
       onSuccess();

@@ -22,6 +22,7 @@ export const Releases: React.FC = () => {
 
   const githubReleaseUrl = 'https://github.com/dev-reymark/frame-kit/releases/tag/v1.0.0';
   const directWindowsExeUrl = 'https://github.com/dev-reymark/frame-kit/releases/download/v1.0.0/FrameKit.Setup.1.0.0.exe';
+  const directAndroidApkUrl = '/FrameKit.apk';
 
   return (
     <section id="releases" style={{ padding: '80px 0', borderBottom: '1px solid var(--border)' }}>
@@ -34,12 +35,12 @@ export const Releases: React.FC = () => {
             Download FrameKit
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            Production standalone binaries hosted on high-speed GitHub Releases CDN.
+            Production standalone binaries hosted on high-speed CDN.
           </p>
         </div>
 
         {/* Multi-Platform Download Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '960px', margin: '0 auto 36px auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '960px', margin: '0 auto 24px auto' }}>
           {/* Windows Card */}
           <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '28px' }}>
             <div>
@@ -91,23 +92,30 @@ export const Releases: React.FC = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <span className="badge badge-purple">Android</span>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Capacitor</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>4.0 MB</span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>Android (.apk)</h3>
               <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                Android tablets & mobile POS terminals. Supports Lock Task Mode pinning.
+                Android tablets & mobile POS terminals. Direct standalone APK package.
               </p>
             </div>
             <a
-              href={githubReleaseUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-secondary"
+              href={directAndroidApkUrl}
+              download="FrameKit.apk"
+              className="btn btn-primary"
               style={{ width: '100%', padding: '12px', fontSize: '13px' }}
             >
               <DownloadIcon size={16} />
-              <span>Download .apk</span>
+              <span>Download .apk (Direct)</span>
             </a>
+          </div>
+        </div>
+
+        {/* Android Install Tip Banner */}
+        <div style={{ maxWidth: '960px', margin: '0 auto 36px auto', padding: '14px 18px', backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
+          <span style={{ fontSize: '18px', flexShrink: 0 }}>📲</span>
+          <div style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            <strong style={{ color: 'var(--text-primary)' }}>How to install on Android:</strong> Tap <strong>Download .apk</strong>. When download completes, tap <strong>Open</strong>. If Android asks for permission, tap <em>Settings &rarr; Turn on "Allow from this source"</em>, then tap <strong>Install</strong>.
           </div>
         </div>
 

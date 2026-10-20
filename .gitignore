@@ -19,3 +19,10 @@ lockdown-config.json
 framekit-config.json
 *.exe
 *.dmg
+*.apk
+!landing/public/*.apk
+.gradle/
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/
