@@ -85,7 +85,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
         } catch {
           // ignore quota error
         }
-        window.location.href = payload.targetUrl;
+        window.location.replace(payload.targetUrl);
         return;
       }
 

@@ -7,7 +7,8 @@ const config: CapacitorConfig = {
   server: {
     // Allows loading LAN HTTP URLs (e.g. 192.168.1.100:3000, localhost:3000)
     cleartext: true,
-    androidScheme: 'https'
+    androidScheme: 'https',
+    allowNavigation: ['*']
   },
   android: {
     allowMixedContent: true,
