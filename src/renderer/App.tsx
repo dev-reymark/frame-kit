@@ -27,7 +27,7 @@ export const App: React.FC = () => {
         if (saved) {
           const parsed = JSON.parse(saved);
           setConfig(parsed);
-          if (parsed.targetUrl && parsed.rememberConfig && viewParam !== 'offline') {
+          if (parsed.targetUrl && parsed.rememberConfig && viewParam !== 'offline' && viewParam !== 'config') {
             window.location.href = parsed.targetUrl;
             return;
           }
