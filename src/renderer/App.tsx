@@ -4,13 +4,43 @@ import { ConfigForm } from './components/ConfigForm';
 import { AdminModal } from './components/AdminModal';
 import { OfflineView } from './components/OfflineView';
 import { HelpModal } from './components/HelpModal';
-import { DocIcon, SettingsIcon } from './components/icons';
+import { StatusBadge } from './components/StatusBadge';
+import {
+  DocIcon,
+  SettingsIcon,
+  SunIcon,
+  MoonIcon,
+  ShieldIcon,
+  SpinnerIcon
+} from './components/icons';
 
 export const App: React.FC = () => {
   const [config, setConfig] = useState<AppConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const savedTheme = localStorage.getItem('framekit_theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') return savedTheme;
+    } catch {
+      // Ignore storage errors
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('framekit_theme', theme);
+    } catch {
+      // Ignore storage errors
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const urlParams = new URLSearchParams(window.location.search);
   const viewParam = urlParams.get('view');
@@ -20,23 +50,28 @@ export const App: React.FC = () => {
   const fetchConfig = async () => {
     try {
       if (window.lockdownAPI) {
-        const loaded = await window.lockdownAPI.getConfig();
-        setConfig(loaded);
+        const loadedConfig = await window.lockdownAPI.getConfig();
+        setConfig(loadedConfig);
       } else {
-        const saved = localStorage.getItem('framekit_config');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setConfig(parsed);
-          if (parsed.targetUrl && parsed.rememberConfig && viewParam !== 'offline' && viewParam !== 'config') {
-            window.location.href = parsed.targetUrl;
+        const savedConfig = localStorage.getItem('framekit_config');
+        if (savedConfig) {
+          const parsedConfig = JSON.parse(savedConfig);
+          setConfig(parsedConfig);
+          if (
+            parsedConfig.targetUrl &&
+            parsedConfig.rememberConfig &&
+            viewParam !== 'offline' &&
+            viewParam !== 'config'
+          ) {
+            window.location.href = parsedConfig.targetUrl;
             return;
           }
         }
       }
-    } catch (err) {
-      console.error('Failed to load initial config:', err);
+    } catch (caughtError) {
+      console.error('Failed to load initial config:', caughtError);
     } finally {
-      setLoading(false);
+      setIsLoadingConfig(false);
     }
   };
 
@@ -52,10 +87,14 @@ export const App: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (isLoadingConfig) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: 'var(--text-muted)' }}>
-        Loading configuration...
+      <div
+        className="app-shell"
+        style={{ alignItems: 'center', justifyContent: 'center', gap: '10px', color: 'var(--text-secondary)' }}
+      >
+        <SpinnerIcon size={20} />
+        <span style={{ fontSize: '13px' }}>Loading container configuration...</span>
       </div>
     );
   }
@@ -84,64 +123,82 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 16px',
-        backgroundColor: 'var(--bg-app)'
-      }}
-    >
-      <div style={{ maxWidth: '480px', width: '100%' }}>
-        {/* Flat Desktop Utility Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
-          <div>
-            <h1 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              FrameKit
-            </h1>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Any website. Your app.
-            </p>
-          </div>
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-header-brand">
+          <span className="logo-mark">F</span>
+          <span className="brand-name">
+            FrameKit <span className="brand-sub">Container</span>
+          </span>
+          <StatusBadge type={config ? 'success' : 'info'} dot>
+            {config ? config.launchMode : 'Setup'}
+          </StatusBadge>
+        </div>
 
-          <div style={{ display: 'flex', gap: '6px' }}>
+        <div className="app-header-actions">
+          <button
+            type="button"
+            onClick={() => setIsHelpOpen(true)}
+            className="btn btn-ghost btn-sm"
+            title="Documentation and System Reference"
+          >
+            <DocIcon size={14} />
+            <span>Docs</span>
+          </button>
+
+          {config && (
             <button
-              onClick={() => setIsHelpOpen(true)}
+              type="button"
+              onClick={() => setIsAdminOpen(true)}
               className="btn btn-secondary btn-sm"
-              style={{ gap: '5px' }}
-              title="Documentation and User Guide"
+              title="Administrator Controls (Ctrl+Shift+Alt+K)"
             >
-              <DocIcon size={13} /> Docs
+              <SettingsIcon size={14} />
+              <span>Admin</span>
             </button>
-            {config && (
-              <button
-                onClick={() => setIsAdminOpen(true)}
-                className="btn btn-secondary btn-sm"
-                style={{ gap: '5px' }}
-                title="Administrator Controls (Ctrl+Shift+Alt+K)"
-              >
-                <SettingsIcon size={13} /> Admin
-              </button>
-            )}
+          )}
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="btn-icon"
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? <MoonIcon size={14} /> : <SunIcon size={14} />}
+          </button>
+        </div>
+      </header>
+
+      <main className="app-main">
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <h1 className="card-title">Container Provisioning</h1>
+              <p className="card-subtitle">
+                Encapsulate any local, LAN, or HTTPS web application into a native standalone shell.
+              </p>
+            </div>
+            <StatusBadge type="info" icon={<ShieldIcon size={11} />}>
+              Isolated Runtime
+            </StatusBadge>
+          </div>
+
+          <div className="card-body">
+            <ConfigForm
+              initialValues={config || undefined}
+              onSuccess={() => {}}
+            />
+          </div>
+
+          <div className="card-footer">
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Administrator Unlock Accelerator
+            </span>
+            <span className="kbd-chip">Ctrl + Shift + Alt + K</span>
           </div>
         </div>
-
-        {/* Form Container */}
-        <div className="card">
-          <ConfigForm
-            initialValues={config || undefined}
-            onSuccess={() => {}}
-          />
-        </div>
-
-        {/* Footer info */}
-        <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)' }}>
-          Administrator Unlock Shortcut: <code style={{ color: 'var(--text-secondary)' }}>Ctrl+Shift+Alt+K</code>
-        </div>
-      </div>
+      </main>
 
       <AdminModal
         isOpen={isAdminOpen}

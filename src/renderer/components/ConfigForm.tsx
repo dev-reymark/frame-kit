@@ -3,7 +3,16 @@ import { LaunchMode, ConfigInput } from '../../types/config';
 import { validateTargetUrl } from '../utils/validation';
 import { ConnectionTester } from './ConnectionTester';
 import { StatusBadge } from './StatusBadge';
-import { AlertIcon, EyeIcon, EyeOffIcon, SpinnerIcon } from './icons';
+import {
+  AlertIcon,
+  EyeIcon,
+  EyeOffIcon,
+  SpinnerIcon,
+  MonitorIcon,
+  MaximizeIcon,
+  LockIcon,
+  ArrowRightIcon
+} from './icons';
 
 interface ConfigFormProps {
   initialValues?: Partial<ConfigInput>;
@@ -20,7 +29,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const [saving, setSaving] = useState(false);
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const urlValidation = validateTargetUrl(targetUrl);
@@ -35,8 +44,8 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
     }
   }, [initialValues]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setErrorMessage(null);
 
     if (!urlValidation.isValid) {
@@ -54,9 +63,9 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
       return;
     }
 
-    setSaving(true);
+    setIsSavingConfig(true);
     try {
-      const payload: ConfigInput = {
+      const configPayload: ConfigInput = {
         appName: appName.trim() || undefined,
         targetUrl: urlValidation.normalizedUrl || targetUrl.trim(),
         launchMode,
@@ -66,39 +75,39 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
       };
 
       if (window.lockdownAPI) {
-        const res = await window.lockdownAPI.saveConfig(payload);
-        if (!res.success) {
-          setErrorMessage(res.error || 'Failed to save configuration.');
-          setSaving(false);
+        const saveResponse = await window.lockdownAPI.saveConfig(configPayload);
+        if (!saveResponse.success) {
+          setErrorMessage(saveResponse.error || 'Failed to save configuration.');
+          setIsSavingConfig(false);
           return;
         }
 
-        const launchRes = await window.lockdownAPI.launchTarget();
-        if (!launchRes.success) {
-          setErrorMessage(launchRes.error || 'Failed to launch target website.');
-          setSaving(false);
+        const launchResponse = await window.lockdownAPI.launchTarget();
+        if (!launchResponse.success) {
+          setErrorMessage(launchResponse.error || 'Failed to launch target website.');
+          setIsSavingConfig(false);
           return;
         }
       } else {
         try {
-          localStorage.setItem('framekit_config', JSON.stringify(payload));
+          localStorage.setItem('framekit_config', JSON.stringify(configPayload));
         } catch {
-          // ignore quota error
+          // Ignore storage quota errors
         }
-        window.location.replace(payload.targetUrl);
+        window.location.replace(configPayload.targetUrl);
         return;
       }
 
       onSuccess();
-    } catch (err) {
-      setErrorMessage((err as Error).message);
+    } catch (caughtError) {
+      setErrorMessage((caughtError as Error).message);
     } finally {
-      setSaving(false);
+      setIsSavingConfig(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       {errorMessage && (
         <div className="alert-box alert-error">
           <AlertIcon size={14} style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -106,38 +115,35 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
         </div>
       )}
 
-      {/* Application Name */}
       <div>
-        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-          APPLICATION NAME (OPTIONAL)
-        </label>
+        <label className="field-label">Application Name (Optional)</label>
         <input
           type="text"
-          placeholder="e.g. POS Terminal 1"
+          placeholder="e.g. POS Terminal #01"
           value={appName}
-          onChange={(e) => setAppName(e.target.value)}
+          onChange={(event) => setAppName(event.target.value)}
         />
-        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Title displayed on the desktop window and taskbar.
+        <p className="field-hint">
+          Window title displayed on the desktop taskbar and container header.
         </p>
       </div>
 
-      {/* Target Website URL */}
       <div>
-        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-          WEBSITE URL <span style={{ color: 'var(--color-danger)' }}>*</span>
+        <label className="field-label">
+          Target Website URL <span style={{ color: 'var(--color-danger)' }}>*</span>
         </label>
         <input
           type="url"
           required
           placeholder="http://localhost:3000 or https://pos.example.com"
           value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value)}
+          onChange={(event) => setTargetUrl(event.target.value)}
+          style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}
         />
         <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           {urlValidation.isValid ? (
             <>
-              {urlValidation.isLocalNetwork && <StatusBadge type="info">Local / LAN Origin</StatusBadge>}
+              {urlValidation.isLocalNetwork && <StatusBadge type="info" dot>Local / LAN Origin</StatusBadge>}
               {urlValidation.warning && (
                 <StatusBadge type="warning" icon={<AlertIcon size={11} />}>
                   {urlValidation.warning}
@@ -147,119 +153,126 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ initialValues, onSuccess
           ) : targetUrl.trim().length > 0 ? (
             <span style={{ fontSize: '11px', color: 'var(--color-danger)' }}>{urlValidation.error}</span>
           ) : (
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Supports localhost, private LAN IPs, and HTTPS domains.
+            <span className="field-hint">
+              Supports localhost, private LAN IPs (192.168.x.x, 10.x.x.x), and HTTPS domains.
             </span>
           )}
         </div>
 
-        {/* Connection Probe */}
         <ConnectionTester url={targetUrl} disabled={!urlValidation.isValid} />
       </div>
 
-      {/* Launch Mode */}
       <div>
-        <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '5px' }}>
-          LAUNCH MODE
-        </label>
+        <label className="field-label">Display Containment Mode</label>
         <div className="mode-selector">
           <button
             type="button"
             className={`mode-btn ${launchMode === 'windowed' ? 'active' : ''}`}
             onClick={() => setLaunchMode('windowed')}
           >
-            Windowed
+            <MonitorIcon size={13} />
+            <span>Windowed</span>
           </button>
           <button
             type="button"
             className={`mode-btn ${launchMode === 'fullscreen' ? 'active' : ''}`}
             onClick={() => setLaunchMode('fullscreen')}
           >
-            Fullscreen
+            <MaximizeIcon size={13} />
+            <span>Fullscreen</span>
           </button>
           <button
             type="button"
             className={`mode-btn ${launchMode === 'kiosk' ? 'active' : ''}`}
             onClick={() => setLaunchMode('kiosk')}
           >
-            Kiosk (Locked)
+            <LockIcon size={13} />
+            <span>Kiosk (Locked)</span>
           </button>
         </div>
-        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '5px' }}>
-          {launchMode === 'kiosk' && 'Kiosk mode locks fullscreen on top and suppresses OS taskbar navigation.'}
-          {launchMode === 'fullscreen' && 'Fullscreen mode runs borderless across display.'}
-          {launchMode === 'windowed' && 'Windowed mode runs in a standard resizable desktop window.'}
+        <p className="field-hint">
+          {launchMode === 'kiosk' && 'Pins fullscreen on top and suppresses OS taskbar, system navigation, and shortcuts.'}
+          {launchMode === 'fullscreen' && 'Expands borderless edge-to-edge across the display without window chrome.'}
+          {launchMode === 'windowed' && 'Runs inside a standard resizable native window without browser address bars.'}
         </p>
       </div>
 
-      {/* Administrator Password */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            {initialValues?.targetUrl ? 'ADMINISTRATOR PASSWORD (OPTIONAL)' : 'ADMINISTRATOR PASSWORD *'}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+          <label className="field-label" style={{ marginBottom: 0 }}>
+            {initialValues?.targetUrl ? 'Administrator Password (Optional)' : 'Administrator Password *'}
           </label>
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="btn-icon"
-            style={{ width: '24px', height: '24px' }}
+            style={{ width: '26px', height: '26px' }}
             title={showPassword ? 'Hide password' : 'Show password'}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
-            {showPassword ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
+            {showPassword ? <EyeOffIcon size={13} /> : <EyeIcon size={13} />}
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div className="form-grid-2">
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder="Admin Password"
+            placeholder="Admin Password / PIN"
             value={adminPassword}
-            onChange={(e) => setAdminPassword(e.target.value)}
+            onChange={(event) => setAdminPassword(event.target.value)}
             required={!initialValues?.targetUrl}
           />
           <input
             type={showPassword ? 'text' : 'password'}
             placeholder="Confirm Password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(event) => setConfirmPassword(event.target.value)}
             required={Boolean(adminPassword)}
           />
         </div>
-        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Required to unlock admin controls (Shortcut: <code>Ctrl+Shift+Alt+K</code>). Minimum 4 characters.
+        <p className="field-hint">
+          Derived with 100,000 PBKDF2-SHA512 iterations. Required to unlock admin controls (<span className="kbd-chip">Ctrl+Shift+Alt+K</span>).
         </p>
       </div>
 
-      {/* Options */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '12px 14px',
+          backgroundColor: 'var(--bg-subtle)',
+          border: '1px solid var(--border-subtle)',
+          fontSize: '12px'
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--text-primary)' }}>
           <input
             type="checkbox"
             checked={launchOnStartup}
-            onChange={(e) => setLaunchOnStartup(e.target.checked)}
+            onChange={(event) => setLaunchOnStartup(event.target.checked)}
           />
-          <span>Launch on Windows startup</span>
+          <span>Launch automatically on operating system startup</span>
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--text-primary)' }}>
           <input
             type="checkbox"
             checked={rememberConfig}
-            onChange={(e) => setRememberConfig(e.target.checked)}
+            onChange={(event) => setRememberConfig(event.target.checked)}
           />
-          <span>Remember configuration for subsequent sessions</span>
+          <span>Remember configuration and boot directly into target URL</span>
         </label>
       </div>
 
-      {/* Submit Action */}
-      <div style={{ marginTop: '6px' }}>
+      <div style={{ paddingTop: '4px' }}>
         <button
           type="submit"
-          disabled={saving || !urlValidation.isValid}
+          disabled={isSavingConfig || !urlValidation.isValid}
           className="btn btn-primary"
-          style={{ width: '100%' }}
+          style={{ width: '100%', minHeight: '42px', fontWeight: 600 }}
         >
-          {saving ? <SpinnerIcon size={14} style={{ marginRight: '6px' }} /> : null}
-          {saving ? 'Launching Container...' : 'Save and Launch'}
+          {isSavingConfig ? <SpinnerIcon size={15} /> : null}
+          <span>{isSavingConfig ? 'Launching Container...' : 'Save Configuration & Launch'}</span>
+          {!isSavingConfig && <ArrowRightIcon size={15} />}
         </button>
       </div>
     </form>

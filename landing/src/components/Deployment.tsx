@@ -1,134 +1,158 @@
 import React, { useState } from 'react';
-import { CopyIcon, CheckIcon } from './icons';
+import { CopyIcon, CheckIcon, TerminalIcon, ShieldIcon } from './icons';
 
-export const Deployment: React.FC = () => {
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+interface DeploymentProps {
+  onOpenDocs?: (docName: string) => void;
+}
 
-  const copyToClipboard = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2000);
+export const Deployment: React.FC<DeploymentProps> = ({ onOpenDocs }) => {
+  const [copiedCommandKey, setCopiedCommandKey] = useState<string | null>(null);
+
+  const handleCopyCommand = (commandText: string, commandKey: string) => {
+    navigator.clipboard.writeText(commandText);
+    setCopiedCommandKey(commandKey);
+    setTimeout(() => setCopiedCommandKey(null), 2000);
   };
 
-  const steps = [
+  const deploymentSteps = [
     {
-      num: '01',
-      title: 'Standard Installation',
-      desc: 'Download the Windows NSIS installer and launch it. The wizard installs FrameKit to your device and automatically creates a desktop shortcut.',
-      code: '.\\FrameKit Setup 1.0.0.exe',
-      key: 'install'
+      stepCode: '01',
+      title: '1. Silent Fleet Installation (SCCM / Intune / MDM)',
+      subtitle: 'Windows NSIS CLI',
+      description:
+        'Deploy FrameKit silently across POS terminals and workstations without interactive prompts.',
+      command: 'Start-Process -FilePath ".\\FrameKit.Setup.1.0.0.exe" -ArgumentList "/S" -Wait',
+      key: 'silent_install'
     },
     {
-      num: '02',
-      title: 'Silent Fleet Deployment (SCCM / Intune / MDM)',
-      desc: 'For enterprise multi-store IT administrators deploying across hundreds of cashier terminals simultaneously via Active Directory or PowerShell script.',
-      code: 'Start-Process -FilePath ".\\FrameKit Setup 1.0.0.exe" -ArgumentList "/S" -Wait',
-      key: 'silent'
+      stepCode: '02',
+      title: '2. Pre-Provisioned Configuration JSON',
+      subtitle: '%APPDATA%\\framekit',
+      description:
+        'Distribute a pre-hashed framekit-config.json file across machines to boot directly into kiosk mode.',
+      command:
+        'Copy-Item -Path "\\\\server\\pos\\framekit-config.json" -Destination "$env:APPDATA\\framekit\\" -Force',
+      key: 'pre_provision'
     },
     {
-      num: '03',
-      title: 'Pre-Provisioning Configuration File',
-      desc: 'Lockdown configuration is saved to %APPDATA%\\framekit\\lockdown-config.json. You can deploy this pre-hashed configuration file across machines to bypass manual setup.',
-      code: 'Copy-Item -Path "\\\\server\\pos-configs\\lockdown-config.json" -Destination "$env:APPDATA\\framekit\\" -Force',
-      key: 'preconf'
+      stepCode: '03',
+      title: '3. Windows Shell Launcher & Assigned Access',
+      subtitle: 'OS Kiosk Hardening',
+      description:
+        'Configure FrameKit as the dedicated Windows Winlogon shell so operators never access explorer.exe.',
+      command:
+        'Set-ItemProperty -Path "HKLM:\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon" -Name "Shell" -Value "C:\\Program Files\\FrameKit\\FrameKit.exe"',
+      key: 'shell_launcher'
     },
     {
-      num: '04',
-      title: 'Emergency Admin Reset Flag',
-      desc: 'If an on-site manager forgets the administrator password or the target domain permanently changes, launch with the recovery flag to clear settings and reset the master PIN.',
-      code: '& "C:\\Users\\$env:USERNAME\\AppData\\Local\\Programs\\framekit\\FrameKit.exe" --reset-framekit-config',
-      key: 'reset'
+      stepCode: '04',
+      title: '4. Emergency Administrator Reset',
+      subtitle: 'Recovery Procedure',
+      description:
+        'Remove the local configuration store if administrator credentials are lost to return to initial setup.',
+      command: 'Remove-Item "$env:APPDATA\\framekit\\framekit-config.json" -Force',
+      key: 'emergency_reset'
     }
   ];
 
   return (
-    <section id="deployment" style={{ padding: '80px 0', borderBottom: '1px solid var(--border)' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 48px auto' }}>
-          <span className="badge badge-purple" style={{ marginBottom: '12px', fontSize: '11px', textTransform: 'uppercase' }}>
-            Enterprise IT & Store Operations
-          </span>
-          <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '12px' }}>
-            Ready for Automated Store Fleet Rollouts
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            From a single indie coffee shop counter to a national 500-store retail chain, FrameKit supports silent scripting, pre-provisioning, and Windows Assigned Access.
+    <section id="deployment">
+      <div className="section-header-bar">
+        <div>
+          <h2 className="section-title">Automated Fleet Rollout &amp; Provisioning</h2>
+          <p className="section-subtitle">
+            Standardized PowerShell commands for silent deployment, configuration pre-seeding, and OS shell lockdown.
           </p>
         </div>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+          Windows 10/11 &bull; macOS MDM &bull; Android COSU
+        </span>
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px' }}>
-          {steps.map((s) => (
-            <div key={s.key} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <span style={{ color: 'var(--accent-purple)', fontFamily: 'monospace', fontWeight: 800, fontSize: '14px' }}>
-                    {s.num}.
-                  </span>
-                  <h3 style={{ fontSize: '16px', fontWeight: 600 }}>{s.title}</h3>
-                </div>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '16px' }}>
-                  {s.desc}
-                </p>
+      <div className="grid-2">
+        {deploymentSteps.map((step) => (
+          <div key={step.key} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div className="card-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <TerminalIcon size={16} />
+                <h3 className="card-title">{step.title}</h3>
               </div>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                {step.subtitle}
+              </span>
+            </div>
+
+            <div className="card-content" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                {step.description}
+              </p>
 
               <div style={{ position: 'relative' }}>
-                <pre className="code-block" style={{ margin: 0, padding: '14px 16px', paddingRight: '80px', fontSize: '12px', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                  <code>{s.code}</code>
+                <pre
+                  className="code-block"
+                  style={{
+                    margin: 0,
+                    paddingRight: '76px',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all'
+                  }}
+                >
+                  <code>{step.command}</code>
                 </pre>
                 <button
                   type="button"
-                  onClick={() => copyToClipboard(s.code, s.key)}
-                  className="btn btn-secondary"
+                  onClick={() => handleCopyCommand(step.command, step.key)}
+                  className="btn btn-secondary btn-sm"
                   style={{
                     position: 'absolute',
                     top: '8px',
                     right: '8px',
-                    padding: '4px 12px',
-                    fontSize: '11px',
-                    height: '28px',
-                    borderRadius: '9999px'
+                    minHeight: '26px',
+                    padding: '2px 10px',
+                    fontSize: '11px'
                   }}
-                  title="Copy command to clipboard"
                 >
-                  {copiedKey === s.key ? (
-                    <>
-                      <CheckIcon size={12} />
-                      <span>COPIED</span>
-                    </>
-                  ) : (
-                    <>
-                      <CopyIcon size={12} />
-                      <span>COPY</span>
-                    </>
-                  )}
+                  {copiedCommandKey === step.key ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+                  <span>{copiedCommandKey === step.key ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Windows Assigned Access Guide */}
-        <div className="card" style={{ marginTop: '32px', backgroundColor: 'var(--bg-contrast)' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '280px' }}>
-              <span className="badge badge-emerald" style={{ marginBottom: '8px' }}>Recommended for Kiosks</span>
-              <h4 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>
-                Windows 10/11 Pro & Enterprise "Assigned Access" Kiosk Mode
-              </h4>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Combine FrameKit with Windows Assigned Access or Shell Launcher. When configured, Windows logs directly into a dedicated kiosk user account and runs FrameKit as the default Windows shell (replacing <code style={{ color: 'var(--accent-blue)' }}>explorer.exe</code>). The user cannot access desktop icons, task managers, or system settings even if rebooted.
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <a
-                href="#docs"
-                className="btn btn-outline"
-                style={{ padding: '8px 18px', fontSize: '12px' }}
-              >
-                View Kiosk Docs
-              </a>
-            </div>
           </div>
+        ))}
+      </div>
+
+      <div className="card" style={{ marginTop: '20px', backgroundColor: 'var(--bg-subtle)' }}>
+        <div
+          className="card-content"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap'
+          }}
+        >
+          <div style={{ flex: 1, minWidth: '260px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <ShieldIcon size={15} style={{ color: 'var(--success)' }} />
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                Defense-in-Depth Kiosk Hardening
+              </span>
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+              Pair FrameKit application containment with Windows Assigned Access, macOS Single App Mode, or Android Lock Task Mode to block OS-level task switching on unattended public kiosks.
+            </p>
+          </div>
+
+          {onOpenDocs && (
+            <button
+              type="button"
+              onClick={() => onOpenDocs('SECURITY.md')}
+              className="btn btn-outline btn-sm"
+            >
+              <span>Read Security Architecture &rarr;</span>
+            </button>
+          )}
         </div>
       </div>
     </section>

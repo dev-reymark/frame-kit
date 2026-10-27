@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { CloseIcon, ExternalLinkIcon } from './icons';
+import React, { useState } from 'react';
+import { CloseIcon, ExternalLinkIcon, CopyIcon, CheckIcon } from './icons';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -7,7 +7,11 @@ interface HelpModalProps {
 }
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
+  const [copiedRecoveryCommand, setCopiedRecoveryCommand] = useState(false);
+
   if (!isOpen) return null;
+
+  const recoveryCommand = 'Remove-Item "$env:APPDATA\\framekit\\framekit-config.json" -Force';
 
   const handleOpenDocsFolder = async () => {
     if (window.lockdownAPI && window.lockdownAPI.openDocs) {
@@ -15,14 +19,29 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleCopyRecovery = () => {
+    navigator.clipboard.writeText(recoveryCommand);
+    setCopiedRecoveryCommand(true);
+    setTimeout(() => setCopiedRecoveryCommand(false), 2000);
+  };
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-dialog" style={{ maxWidth: '580px', maxHeight: '90vh' }}>
-        {/* Header */}
+    <div
+      className="modal-overlay"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="modal-dialog" style={{ maxWidth: '600px' }} role="dialog" aria-modal="true">
         <div className="modal-header">
-          <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            Documentation & System Reference
-          </h3>
+          <div>
+            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Documentation &amp; System Reference
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              Quick reference for shortcuts, containment profiles, and offline recovery.
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="btn-icon"
@@ -33,86 +52,99 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="modal-body" style={{ overflowY: 'auto' }}>
-          {/* Section 1: Administrator Shortcut */}
-          <div style={{ backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', padding: '12px', marginBottom: '14px' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--text-primary)', marginBottom: '4px' }}>
-              ADMINISTRATOR UNLOCK SHORTCUT
+        <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', padding: '14px' }}>
+            <div className="field-label" style={{ marginBottom: '4px' }}>
+              Administrator Unlock Shortcut
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              When the browser is locked in fullscreen or kiosk mode, press:
+              When the container is locked in fullscreen or kiosk mode, summon the admin prompt with:
             </p>
-            <code style={{ display: 'inline-block', backgroundColor: 'var(--accent-primary)', color: '#ffffff', padding: '4px 10px', fontSize: '12px', fontWeight: 600, fontFamily: 'monospace' }}>
-              Ctrl + Shift + Alt + K
-            </code>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
-              Prompts for your administrator password to modify the URL, change launch modes, reload, or exit kiosk mode.
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span className="kbd-chip">Ctrl + Shift + Alt + K</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                (or <span className="kbd-chip">Cmd + Shift + Option + K</span> on macOS)
+              </span>
+            </div>
           </div>
 
-          {/* Section 2: Launch Modes */}
-          <div style={{ marginBottom: '14px' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              LAUNCH MODES
+          <div>
+            <div className="field-label" style={{ marginBottom: '6px' }}>
+              Display Containment Profiles
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-              <div style={{ border: '1px solid var(--border-subtle)', padding: '8px 10px' }}>
-                <strong>Kiosk Mode:</strong> Pinned fullscreen window with OS taskbar covered. Prevents ordinary users from escaping.
+              <div style={{ border: '1px solid var(--border-subtle)', padding: '10px 12px', backgroundColor: 'var(--bg-page)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Kiosk Mode:</strong>{' '}
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  Pinned fullscreen window with OS taskbar covered and Android Lock Task active.
+                </span>
               </div>
-              <div style={{ border: '1px solid var(--border-subtle)', padding: '8px 10px' }}>
-                <strong>Fullscreen Mode:</strong> Borderless fullscreen display for customer-facing displays.
+              <div style={{ border: '1px solid var(--border-subtle)', padding: '10px 12px', backgroundColor: 'var(--bg-page)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Fullscreen Mode:</strong>{' '}
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  Borderless edge-to-edge display for cashier counters and secondary screens.
+                </span>
               </div>
-              <div style={{ border: '1px solid var(--border-subtle)', padding: '8px 10px' }}>
-                <strong>Windowed Mode:</strong> Standard desktop window without browser chrome. Ideal for supervisor PCs.
+              <div style={{ border: '1px solid var(--border-subtle)', padding: '10px 12px', backgroundColor: 'var(--bg-page)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Windowed Mode:</strong>{' '}
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  Standard desktop window without browser chrome for back-office workstations.
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Emergency Password Recovery */}
-          <div style={{ marginBottom: '14px' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              EMERGENCY PASSWORD RESET
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              If you lose the administrator credentials, delete the local configuration file:
-            </p>
-            <div style={{ backgroundColor: '#1e293b', color: '#f8fafc', padding: '8px 10px', fontSize: '11px', fontFamily: 'monospace', overflowX: 'auto' }}>
-              Remove-Item "$env:APPDATA\framekit\framekit-config.json" -Force
-            </div>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Deleting this file returns the application to first-time setup mode.
-            </p>
-          </div>
-
-          {/* Section 4: Offline Guides */}
-          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              INSTALLED DOCUMENTATION FILES
-            </div>
-            <ul style={{ fontSize: '12px', color: 'var(--text-secondary)', paddingLeft: '18px', lineHeight: '1.6' }}>
-              <li><code>README.md</code> — Overview and quick start</li>
-              <li><code>docs/ARCHITECTURE.md</code> — Internal lifecycle and state machine</li>
-              <li><code>docs/SECURITY.md</code> — Threat model and Windows Assigned Access guide</li>
-              <li><code>docs/BUILD-AND-INSTALL.md</code> — Silent deployment (<code>/S</code>) for fleet rollouts</li>
-              <li><code>docs/CONFIGURATION.md</code> — Full JSON schema and origin whitelist</li>
-              <li><code>docs/TESTING.md</code> — Automated test matrices</li>
-            </ul>
-
-            <div style={{ marginTop: '10px' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span className="field-label" style={{ marginBottom: 0 }}>
+                Emergency Password Reset
+              </span>
               <button
                 type="button"
-                onClick={handleOpenDocsFolder}
+                onClick={handleCopyRecovery}
                 className="btn btn-secondary btn-sm"
-                style={{ gap: '6px' }}
+                style={{ minHeight: '26px', padding: '2px 10px', fontSize: '11px' }}
               >
-                <ExternalLinkIcon size={12} /> Open Docs in Windows Explorer
+                {copiedRecoveryCommand ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+                <span>{copiedRecoveryCommand ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              If administrator credentials are lost, remove the local configuration file to return to initial setup:
+            </p>
+            <div className="code-snippet">
+              {recoveryCommand}
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
+            <div className="field-label" style={{ marginBottom: '6px' }}>
+              Bundled Technical Specifications
+            </div>
+            <ul style={{ fontSize: '12px', color: 'var(--text-secondary)', paddingLeft: '18px', lineHeight: '1.7' }}>
+              <li><code>README.md</code> &mdash; Platform overview and quick start</li>
+              <li><code>docs/ARCHITECTURE.md</code> &mdash; Process isolation and lifecycle state machine</li>
+              <li><code>docs/SECURITY.md</code> &mdash; Threat model, PBKDF2 hashing, and Windows Assigned Access</li>
+              <li><code>docs/BUILD-AND-INSTALL.md</code> &mdash; Silent fleet deployment (<code>/S</code>)</li>
+              <li><code>docs/CONFIGURATION.md</code> &mdash; JSON schema and origin whitelist rules</li>
+              <li><code>docs/TESTING.md</code> &mdash; Automated verification suite</li>
+            </ul>
+
+            {window.lockdownAPI && (
+              <div style={{ marginTop: '12px' }}>
+                <button
+                  type="button"
+                  onClick={handleOpenDocsFolder}
+                  className="btn btn-secondary btn-sm"
+                >
+                  <ExternalLinkIcon size={13} />
+                  <span>Open Docs Folder</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Footer */}
         <div className="modal-footer">
           <button type="button" onClick={onClose} className="btn btn-primary btn-sm">
             Close

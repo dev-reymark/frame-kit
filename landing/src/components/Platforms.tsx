@@ -1,119 +1,163 @@
 import React from 'react';
-import { DownloadIcon } from './icons';
+import { PortalView } from './Navbar';
+import { DownloadIcon, CheckIcon, MonitorIcon, SmartphoneIcon } from './icons';
 
-export const Platforms: React.FC = () => {
-  const platforms = [
+interface PlatformsProps {
+  onNavigateView?: (view: PortalView) => void;
+}
+
+export const Platforms: React.FC<PlatformsProps> = ({ onNavigateView }) => {
+  const platformTargets = [
     {
       id: 'windows',
       name: 'Windows',
       badge: 'v1.0.0 Stable',
-      tech: 'Electron + Chromium Native',
+      badgeClass: 'badge-blue',
+      icon: MonitorIcon,
+      runtime: 'Electron 44 + Chromium',
       formats: '.exe (NSIS Installer) & Portable',
-      description: 'Native Windows desktop integration with single-instance mutex, taskbar containment, and Windows Assigned Access kiosk shell integration.',
-      features: [
-        'Windows 10, 11, IoT Enterprise, & Server',
-        'Silent automated deployment (/S switch)',
-        'Full keyboard shortcut & F12 suppression',
-        'Automatic offline reconnect & crash recovery'
+      description:
+        'Native Windows desktop integration with single-instance mutex, taskbar suppression, and Windows Assigned Access kiosk compatibility.',
+      highlights: [
+        'Windows 10, 11, IoT Enterprise & Server',
+        'Silent unattended rollout (/S flag)',
+        'Ctrl+Shift+Alt+K protected admin unlock',
+        'Bundled offline markdown documentation'
       ],
-      actionText: 'Download .exe',
-      actionHref: '#releases',
-      accentColor: 'var(--accent-blue)'
+      actionText: 'Download Windows .exe',
+      href: 'https://github.com/dev-reymark/frame-kit/releases/download/v1.0.0/FrameKit.Setup.1.0.0.exe'
     },
     {
       id: 'macos',
       name: 'macOS',
-      badge: 'Universal Ready',
-      tech: 'Electron + macOS Runtime',
-      formats: '.dmg & .zip (Universal Binary)',
-      description: 'Edge-to-edge standalone container for Apple Silicon (M1/M2/M3/M4) and Intel Macs, with Cmd-based admin unlock shortcuts.',
-      features: [
-        'macOS Sequoia, Sonoma, Ventura, & Monterey',
-        'Universal arm64 and x64 native architecture',
-        'Cmd+Option+Shift+K protected admin shortcut',
+      badge: 'Universal Binary',
+      badgeClass: 'badge-emerald',
+      icon: MonitorIcon,
+      runtime: 'Electron 44 + macOS Native',
+      formats: '.dmg & .zip (arm64 + x64)',
+      description:
+        'Standalone container for Apple Silicon (M1–M4) and Intel Macs with native Command-key shortcut interception and Single App Mode support.',
+      highlights: [
+        'macOS Sequoia, Sonoma, Ventura & Monterey',
+        'Universal arm64 and x64 architecture',
+        'Cmd+Option+Shift+K admin accelerator',
         'Suppresses Cmd+Q, Cmd+W, and Cmd+R'
       ],
-      actionText: 'Download .dmg',
-      actionHref: '#releases',
-      accentColor: 'var(--accent-emerald)'
+      actionText: 'View macOS Release',
+      href: 'https://github.com/dev-reymark/frame-kit/releases/tag/v1.0.0'
     },
     {
       id: 'android',
       name: 'Android',
-      badge: 'Capacitor Kiosk',
-      tech: 'Capacitor + Android WebView',
-      formats: '.apk & .aab (Google Play / MDM)',
-      description: 'Dedicated tablet and mobile POS shell. Leverages Android Lock Task Mode (COSU) to pin the app and disable system navigation buttons.',
-      features: [
-        'Android 8.0+ (Oreo through Android 15)',
-        'Lock Task Mode (disables Home & Recents)',
-        'Cleartext support for local LAN POS servers',
-        'Portrait, Landscape, or Auto orientation'
+      badge: 'Lock Task Mode',
+      badgeClass: 'badge-purple',
+      icon: SmartphoneIcon,
+      runtime: 'Capacitor 8 + Android WebView',
+      formats: '.apk & .aab (Direct / MDM)',
+      description:
+        'Dedicated tablet and mobile POS shell. Uses Android Lock Task Mode to pin the viewport and suppress Home and Recents navigation.',
+      highlights: [
+        'Android 8.0+ tablets & mobile terminals',
+        'Hardware-pinned Lock Task containment',
+        'Cleartext LAN HTTP support for local POS',
+        '3-finger gesture & back-button admin menu'
       ],
-      actionText: 'Get Android APK',
-      actionHref: '#releases',
-      accentColor: 'var(--accent-purple)'
+      actionText: 'Download Android .apk',
+      href: '/FrameKit.apk',
+      downloadName: 'FrameKit.apk'
     }
   ];
 
   return (
-    <section id="platforms" style={{ padding: '80px 0', borderBottom: '1px solid var(--border)' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 48px auto' }}>
-          <span className="badge badge-emerald" style={{ marginBottom: '12px', fontSize: '11px', textTransform: 'uppercase' }}>
-            Cross-Platform Distribution
-          </span>
-          <h2 style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '12px' }}>
-            One Codebase. Tailored Across Three Platforms.
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            Transform web applications into native standalone experiences on Windows desktop terminals, Mac manager workstations, and Android POS tablets.
+    <section id="platforms">
+      <div className="section-header-bar">
+        <div>
+          <h2 className="section-title">Cross-Platform Native Runtimes</h2>
+          <p className="section-subtitle">
+            One unified configuration schema across Windows desktop terminals, macOS workstations, and Android tablets.
           </p>
         </div>
+        {onNavigateView && (
+          <button
+            type="button"
+            onClick={() => onNavigateView('downloads')}
+            className="btn btn-ghost btn-sm"
+          >
+            <span>All Releases &amp; Checksums &rarr;</span>
+          </button>
+        )}
+      </div>
 
-        <div className="grid-3">
-          {platforms.map((p) => (
-            <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px' }}>
+      <div className="grid-3">
+        {platformTargets.map((platform) => {
+          const IconComponent = platform.icon;
+          return (
+            <div
+              key={platform.id}
+              className="card"
+              style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+            >
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '22px', fontWeight: 700 }}>{p.name}</h3>
-                  <span className="badge" style={{ color: p.accentColor, borderColor: p.accentColor }}>{p.badge}</span>
+                <div className="card-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <IconComponent size={17} />
+                    <h3 className="card-title">{platform.name}</h3>
+                  </div>
+                  <span className={`badge ${platform.badgeClass}`}>{platform.badge}</span>
                 </div>
 
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: '8px' }}>
-                  CORE: {p.tech}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'monospace', marginBottom: '16px' }}>
-                  FORMAT: {p.formats}
-                </div>
+                <div className="card-content" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      backgroundColor: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-subtle)',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '11px',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '3px'
+                    }}
+                  >
+                    <div>RUNTIME: {platform.runtime}</div>
+                    <div>PACKAGE: {platform.formats}</div>
+                  </div>
 
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '20px' }}>
-                  {p.description}
-                </p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    {platform.description}
+                  </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
-                  {p.features.map((f, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
-                      <span style={{ color: p.accentColor, fontWeight: 700 }}>✓</span>
-                      <span>{f}</span>
-                    </div>
-                  ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {platform.highlights.map((highlight) => (
+                      <div
+                        key={highlight}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
+                      >
+                        <CheckIcon size={13} style={{ color: 'var(--success)', flexShrink: 0 }} />
+                        <span>{highlight}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div>
+              <div className="card-footer">
                 <a
-                  href={p.actionHref}
-                  className="btn btn-secondary"
-                  style={{ width: '100%', padding: '12px 20px', fontSize: '13px', fontWeight: 600 }}
+                  href={platform.href}
+                  download={platform.downloadName}
+                  target={platform.downloadName ? undefined : '_blank'}
+                  rel={platform.downloadName ? undefined : 'noreferrer'}
+                  className="btn btn-outline btn-sm"
+                  style={{ width: '100%' }}
                 >
-                  <DownloadIcon size={15} />
-                  <span>{p.actionText}</span>
+                  <DownloadIcon size={14} />
+                  <span>{platform.actionText}</span>
                 </a>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </section>
   );

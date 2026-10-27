@@ -1,7 +1,16 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { AppConfig, LaunchMode } from '../../types/config';
 import { validateTargetUrl } from '../utils/validation';
-import { CloseIcon, AlertIcon, CheckIcon, EyeIcon, EyeOffIcon, SpinnerIcon } from './icons';
+import {
+  CloseIcon,
+  AlertIcon,
+  CheckIcon,
+  EyeIcon,
+  EyeOffIcon,
+  SpinnerIcon,
+  ReloadIcon,
+  UnlockIcon
+} from './icons';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -10,7 +19,12 @@ interface AdminModalProps {
   onConfigUpdated: () => void;
 }
 
-export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config, onConfigUpdated }) => {
+export const AdminModal: React.FC<AdminModalProps> = ({
+  isOpen,
+  onClose,
+  config,
+  onConfigUpdated
+}) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -28,8 +42,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
 
   if (!isOpen) return null;
 
-  const handleAuthenticate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuthenticate = async (event: React.FormEvent) => {
+    event.preventDefault();
     setAuthError(null);
     setIsAuthenticating(true);
 
@@ -40,34 +54,34 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
     }
 
     try {
-      const res = await window.lockdownAPI.authenticateAdmin(password);
-      if (res.success) {
+      const authResponse = await window.lockdownAPI.authenticateAdmin(password);
+      if (authResponse.success) {
         setIsAuthenticated(true);
         if (config) {
           setTargetUrl(config.targetUrl);
           setLaunchMode(config.launchMode);
         }
       } else {
-        setAuthError(res.error || 'Authentication failed.');
-        if (res.lockoutRemainingMs) {
-          setLockoutSecs(Math.ceil(res.lockoutRemainingMs / 1000));
+        setAuthError(authResponse.error || 'Authentication failed.');
+        if (authResponse.lockoutRemainingMs) {
+          setLockoutSecs(Math.ceil(authResponse.lockoutRemainingMs / 1000));
         }
       }
-    } catch (err) {
-      setAuthError((err as Error).message);
+    } catch (caughtError) {
+      setAuthError((caughtError as Error).message);
     } finally {
       setIsAuthenticating(false);
     }
   };
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveSettings = async (event: React.FormEvent) => {
+    event.preventDefault();
     setSaveError(null);
     setSaveSuccess(false);
 
-    const val = validateTargetUrl(targetUrl);
-    if (!val.isValid) {
-      setSaveError(val.error || 'Invalid target URL');
+    const validation = validateTargetUrl(targetUrl);
+    if (!validation.isValid) {
+      setSaveError(validation.error || 'Invalid target URL');
       return;
     }
 
@@ -79,21 +93,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
     }
 
     try {
-      const res = await window.lockdownAPI.updateSettings(password, {
-        targetUrl: val.normalizedUrl || targetUrl.trim(),
+      const updateResponse = await window.lockdownAPI.updateSettings(password, {
+        targetUrl: validation.normalizedUrl || targetUrl.trim(),
         launchMode,
         adminPassword: newPassword.trim() ? newPassword.trim() : undefined
       });
 
-      if (res.success) {
+      if (updateResponse.success) {
         setSaveSuccess(true);
         onConfigUpdated();
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
-        setSaveError(res.error || 'Failed to update settings.');
+        setSaveError(updateResponse.error || 'Failed to update settings.');
       }
-    } catch (err) {
-      setSaveError((err as Error).message);
+    } catch (caughtError) {
+      setSaveError((caughtError as Error).message);
     } finally {
       setIsSaving(false);
     }
@@ -102,6 +116,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
   const handleReload = async () => {
     if (window.lockdownAPI) {
       await window.lockdownAPI.reloadApp();
+    } else {
+      window.location.reload();
     }
   };
 
@@ -119,13 +135,24 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-dialog" style={{ maxWidth: '500px' }}>
-        {/* Header */}
+    <div
+      className="modal-overlay"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="modal-dialog" style={{ maxWidth: '520px' }} role="dialog" aria-modal="true">
         <div className="modal-header">
-          <h3 style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            {isAuthenticated ? 'Administrator Controls' : 'Administrator Authentication'}
-          </h3>
+          <div>
+            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              {isAuthenticated ? 'Administrator Controls' : 'Administrator Authentication'}
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              {isAuthenticated
+                ? 'Manage container origin, display profile, and runtime lifecycle.'
+                : 'Enter your administrator password or PIN to unlock container settings.'}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="btn-icon"
@@ -136,14 +163,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
           </button>
         </div>
 
-        {/* Body */}
         <div className="modal-body">
           {!isAuthenticated ? (
             <div>
-              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
-                Enter the administrator password or PIN to unlock settings and maintenance controls.
-              </p>
-
               {authError && (
                 <div className="alert-box alert-error" style={{ marginBottom: '14px' }}>
                   <AlertIcon size={14} style={{ flexShrink: 0, marginTop: '1px' }} />
@@ -151,17 +173,17 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
                 </div>
               )}
 
-              <form onSubmit={handleAuthenticate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <form onSubmit={handleAuthenticate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                      ADMINISTRATOR PASSWORD
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label className="field-label" style={{ marginBottom: 0 }}>
+                      Administrator Password
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="btn-icon"
-                      style={{ width: '22px', height: '22px' }}
+                      style={{ width: '24px', height: '24px' }}
                       title={showPassword ? 'Hide password' : 'Show password'}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
@@ -170,16 +192,16 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter password"
+                    placeholder="Enter administrator password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(event) => setPassword(event.target.value)}
                     disabled={Boolean(lockoutSecs && lockoutSecs > 0) || isAuthenticating}
                     autoFocus
                     required
                   />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                   <button type="button" onClick={onClose} className="btn btn-secondary btn-sm">
                     Cancel
                   </button>
@@ -188,8 +210,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
                     disabled={!password || Boolean(lockoutSecs && lockoutSecs > 0) || isAuthenticating}
                     className="btn btn-primary btn-sm"
                   >
-                    {isAuthenticating ? <SpinnerIcon size={12} style={{ marginRight: '6px' }} /> : null}
-                    {isAuthenticating ? 'Authenticating...' : 'Authenticate'}
+                    {isAuthenticating ? <SpinnerIcon size={13} /> : <UnlockIcon size={13} />}
+                    <span>{isAuthenticating ? 'Verifying...' : 'Unlock Controls'}</span>
                   </button>
                 </div>
               </form>
@@ -212,21 +234,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
 
               <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    TARGET WEBSITE URL
-                  </label>
+                  <label className="field-label">Target Website URL</label>
                   <input
                     type="url"
                     value={targetUrl}
-                    onChange={(e) => setTargetUrl(e.target.value)}
+                    onChange={(event) => setTargetUrl(event.target.value)}
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}
                     required
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    LAUNCH MODE
-                  </label>
+                  <label className="field-label">Display Mode</label>
                   <div className="mode-selector">
                     <button
                       type="button"
@@ -253,15 +272,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                      NEW PASSWORD (OPTIONAL)
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label className="field-label" style={{ marginBottom: 0 }}>
+                      New Password (Optional)
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       className="btn-icon"
-                      style={{ width: '22px', height: '22px' }}
+                      style={{ width: '24px', height: '24px' }}
                       title={showNewPassword ? 'Hide password' : 'Show password'}
                       aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                     >
@@ -270,40 +289,42 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, config,
                   </div>
                   <input
                     type={showNewPassword ? 'text' : 'password'}
-                    placeholder="Leave blank to preserve current"
+                    placeholder="Leave blank to keep current password"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(event) => setNewPassword(event.target.value)}
                   />
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
                   <button type="submit" disabled={isSaving} className="btn btn-primary btn-sm">
-                    {isSaving ? <SpinnerIcon size={12} style={{ marginRight: '6px' }} /> : null}
-                    Save Settings
+                    {isSaving ? <SpinnerIcon size={13} /> : null}
+                    <span>Save Settings</span>
                   </button>
                 </div>
               </form>
 
-              <hr style={{ margin: '16px 0', borderColor: 'var(--border-subtle)', borderWidth: '1px 0 0 0' }} />
+              <hr style={{ margin: '18px 0', borderColor: 'var(--border-subtle)', borderWidth: '1px 0 0 0' }} />
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  APPLICATION ACTIONS
+                <label className="field-label" style={{ marginBottom: '8px' }}>
+                  Container Runtime Actions
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div className="action-grid-2">
                   <button
                     type="button"
                     onClick={handleReload}
                     className="btn btn-secondary btn-sm"
                   >
-                    Reload Container
+                    <ReloadIcon size={13} />
+                    <span>Reload Container</span>
                   </button>
                   <button
                     type="button"
                     onClick={handleExitKiosk}
                     className="btn btn-secondary btn-sm"
                   >
-                    Exit Kiosk Mode
+                    <UnlockIcon size={13} />
+                    <span>Exit Kiosk Mode</span>
                   </button>
                   <button
                     type="button"

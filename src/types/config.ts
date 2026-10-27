@@ -69,8 +69,10 @@ export interface FrameKitAPI {
   onNavigateStatus?: (callback: (status: { loading: boolean; url?: string; error?: string }) => void) => () => void;
 }
 
+export type LockdownAPI = FrameKitAPI;
+
 declare global {
   interface Window {
-    lockdownAPI: LockdownAPI;
+    lockdownAPI: FrameKitAPI;
   }
 }

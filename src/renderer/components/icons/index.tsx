@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 export interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
@@ -15,7 +15,7 @@ const baseProps = (props: IconProps) => {
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 1.5,
+    strokeWidth: 1.75,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
     className,
@@ -144,5 +144,52 @@ export const MaximizeIcon: React.FC<IconProps> = (props) => (
 export const ShieldIcon: React.FC<IconProps> = (props) => (
   <svg {...baseProps(props)}>
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+
+export const SunIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="m17.66 17.66 1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="m6.34 17.66-1.41 1.41" />
+    <path d="m19.07 4.93-1.41 1.41" />
+  </svg>
+);
+
+export const MoonIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+  </svg>
+);
+
+export const CopyIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <rect width="14" height="14" x="8" y="8" rx="0" ry="0" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </svg>
+);
+
+export const TerminalIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <polyline points="4 17 10 11 4 5" />
+    <line x1="12" y1="19" x2="20" y2="19" />
+  </svg>
+);
+
+export const ActivityIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+);
+
+export const ArrowRightIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
   </svg>
 );

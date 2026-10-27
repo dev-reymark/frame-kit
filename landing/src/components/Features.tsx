@@ -1,63 +1,84 @@
 import React from 'react';
+import {
+  MonitorIcon,
+  ShieldIcon,
+  LockIcon,
+  TerminalIcon,
+  ActivityIcon,
+  MaximizeIcon
+} from './icons';
 
 export const Features: React.FC = () => {
-  const items = [
+  const featureItems = [
     {
+      icon: MonitorIcon,
       title: 'Zero Web App Changes',
-      desc: 'Functions purely as an external native container. Your React, Next.js, Laravel, or legacy web application runs without a single line of code modification or plugin.'
+      description:
+        'Operates purely as an external native container. React, Next.js, Laravel, or legacy POS web apps run without SDKs or code changes.'
     },
     {
-      title: 'Cross-Platform Native Core',
-      desc: 'Built with Electron for Windows & macOS, and Capacitor with native WebView for Android tablets. Deliver a consistent, unified experience across every screen.'
-    },
-    {
+      icon: ShieldIcon,
       title: 'Main-Process Navigation Guard',
-      desc: 'Navigation to unapproved external domains and popups is intercepted and blocked at the native process level via will-navigate and setWindowOpenHandler.'
+      description:
+        'Unapproved external domains and popups are intercepted and denied at the Chromium main-process boundary via will-navigate and setWindowOpenHandler.'
     },
     {
-      title: 'Shortcut & Gesture Defense',
-      desc: 'Suppresses developer tools (F12, Ctrl/Cmd+Shift+I), uncontrolled reloads, and navigation keys (Ctrl/Cmd+R, Ctrl/Cmd+N, Ctrl/Cmd+W) at the Chromium input level.'
+      icon: LockIcon,
+      title: 'PBKDF2-SHA512 Admin Lock',
+      description:
+        'Administrator credentials use 100,000 PBKDF2-SHA512 iterations with a 32-byte salt and enforce a 30-second lockout after 5 failed attempts.'
     },
     {
-      title: 'PBKDF2-SHA512 Admin Security',
-      desc: 'Administrator PIN is derived with 100,000 PBKDF2 iterations and a unique 32-byte salt. Protected shortcut enforces an automatic 30-second lockout after 5 failed attempts.'
+      icon: TerminalIcon,
+      title: 'Shortcut & DevTools Suppression',
+      description:
+        'Blocks F12, Ctrl/Cmd+Shift+I, uncontrolled reloads, and browser history shortcuts directly at the Chromium input event layer.'
     },
     {
-      title: 'Localhost, LAN IPs & Strict TLS',
-      desc: 'Safely supports localhost:3000, private store LAN IPs (192.168.x.x, 10.x.x.x), and public HTTPS domains. Enforces SSL certificate validation for public domains.'
+      icon: ActivityIcon,
+      title: 'Localhost, LAN & Strict TLS',
+      description:
+        'Supports localhost, private store LAN subnets (192.168.x.x, 10.x.x.x), and public HTTPS origins with strict TLS certificate validation.'
+    },
+    {
+      icon: MaximizeIcon,
+      title: 'Offline Auto-Reconnect',
+      description:
+        'Detects network drops and renderer crashes, transitioning to a clean local diagnostic screen with a 15-second automatic retry loop.'
     }
   ];
 
   return (
-    <section id="features" style={{ padding: '80px 0', borderBottom: '1px solid var(--border)' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 50px auto' }}>
-          <span className="badge badge-blue" style={{ marginBottom: '12px', fontSize: '11px', textTransform: 'uppercase' }}>
-            FrameKit Architecture
-          </span>
-          <h2 style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '12px' }}>
-            Everything You Need to Turn Websites into Native Apps
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            Traditional browsers expose address bars, tabs, settings, and developer shortcuts. FrameKit seals the perimeter with native container containment.
+    <section id="features">
+      <div className="section-header-bar">
+        <div>
+          <h2 className="section-title">Core Platform Architecture</h2>
+          <p className="section-subtitle">
+            Engineered for point-of-sale counters, self-service kiosks, and dedicated enterprise workstations.
           </p>
         </div>
+        <span className="badge">Process-Isolated</span>
+      </div>
 
-        <div className="grid-3">
-          {items.map((item, idx) => (
-            <div key={idx} className="card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <span style={{ color: 'var(--accent-blue)', fontFamily: 'monospace', fontSize: '13px', fontWeight: 700 }}>
-                  0{idx + 1}.
-                </span>
-                <h3 style={{ fontSize: '16px', fontWeight: 600 }}>{item.title}</h3>
+      <div className="grid-3">
+        {featureItems.map((featureItem) => {
+          const IconComponent = featureItem.icon;
+          return (
+            <div key={featureItem.title} className="card">
+              <div className="card-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <IconComponent size={17} style={{ color: 'var(--text-primary)' }} />
+                  <h3 className="card-title">{featureItem.title}</h3>
+                </div>
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                {item.desc}
-              </p>
+              <div className="card-content">
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  {featureItem.description}
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </section>
   );
